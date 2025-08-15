@@ -48,9 +48,13 @@ jobs:
         run: |
           echo "Comparing changes from last commit..."
           if git diff --name-only HEAD^ HEAD | grep -q '^crates/sui-core/tests/staged/sui.yaml$'; then
+            commit_hash=$(git log -1 --pretty=format:'%h')
+            commit_author=$(git log -1 --pretty=format:'%an')
+            commit_msg=$(git log -1 --pretty=format:'%s')
+      
             echo "✅ sui.yaml was updated — sending Slack alert"
             curl -X POST -H 'Content-type: application/json' \
-              --data '{"text":"🚨 sui.yaml was updated!"}' \
+              --data "{\"text\":\"🚨 sui.yaml was updated in commit ${commit_hash} by ${commit_author}\nMessage: ${commit_msg}\"}" \
               ${{ secrets.SLACK_WEBHOOK }}
           else
             echo "ℹ️ No changes to sui.yaml"
