@@ -8,7 +8,7 @@ on:
         required: false
         default: "false"
   schedule:
-    - cron: "0 * * * *" # chạy mỗi giờ
+    - cron: "0 0 * * *"
 
 permissions:
   contents: write
@@ -52,9 +52,12 @@ jobs:
             commit_author=$(git log -1 --pretty=format:'%an')
             commit_msg=$(git log -1 --pretty=format:'%s')
       
+            # List ID tag
+            slack_mentions="<@U096HQGCCBV> <@U789XYZ000> <@U456DEF789>"
+      
             echo "✅ sui.yaml was updated — sending Slack alert"
             curl -X POST -H 'Content-type: application/json' \
-              --data "{\"text\":\"🚨 sui.yaml was updated in commit ${commit_hash} by ${commit_author}\nMessage: ${commit_msg}\"}" \
+              --data "{\"text\":\"🚨 sui.yaml was updated in commit ${commit_hash} by ${commit_author}\nMessage: ${commit_msg}\n${slack_mentions}\"}" \
               ${{ secrets.SLACK_WEBHOOK }}
           else
             echo "ℹ️ No changes to sui.yaml"
