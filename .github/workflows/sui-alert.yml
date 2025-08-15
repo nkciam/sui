@@ -1,9 +1,14 @@
 name: Sync Fork & Check sui.yaml Changes
 
 on:
+  workflow_dispatch:
+    inputs:
+      test_mode:
+        description: "Enable fake upstream change for testing?"
+        required: false
+        default: "false"
   schedule:
-    - cron: "0 * * * *" 
-  workflow_dispatch:   
+    - cron: "0 * * * *" # chạy mỗi giờ
 
 jobs:
   sync-and-check:
@@ -12,7 +17,7 @@ jobs:
       - name: Checkout fork
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 
+          fetch-depth: 0
 
       - name: Add upstream remote
         run: |
@@ -23,13 +28,20 @@ jobs:
         run: |
           git merge upstream/main --no-edit || echo "No merge needed"
 
-      - name: Check if sui.yaml changed in upstream
+      - name: [TEST MODE] Fake change to sui.yaml
+        if: ${{ github.event.inputs.test_mode == 'true' }}
         run: |
-          echo "Comparing changes from upstream..."
+          echo "//test-change $(date)" >> crates/sui-core/tests/staged/sui.yaml
+          git add crates/sui-core/tests/staged/sui.yaml
+          git commit -m "Fake change for testing Slack alert"
+
+      - name: Check if sui.yaml changed in last commit
+        run: |
+          echo "Comparing changes from last commit..."
           if git diff --name-only HEAD^ HEAD | grep -q 'crates/sui-core/tests/staged/sui.yaml'; then
             echo "✅ sui.yaml was updated — sending Slack alert"
             curl -X POST -H 'Content-type: application/json' \
-              --data '{"text":"🚨 sui.yaml was updated in upstream!"}' \
+              --data '{"text":"🚨 sui.yaml was updated!"}' \
               ${{ secrets.SLACK_WEBHOOK }}
           else
             echo "ℹ️ No changes to sui.yaml"
