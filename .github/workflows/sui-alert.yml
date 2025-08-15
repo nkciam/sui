@@ -14,8 +14,14 @@ jobs:
           
       - name: Check file change
         run: |
+          echo "Comparing changes:"
+          git diff --name-only HEAD^ HEAD
+      
           if git diff --name-only HEAD^ HEAD | grep -q 'crates/sui-core/tests/staged/sui.yaml'; then
+            echo "✅ sui.yaml was updated — sending Slack alert"
             curl -X POST -H 'Content-type: application/json' \
-              --data '{"text":"sui.yaml was updated!"}' \
+              --data '{"text":"🚨 sui.yaml was updated!"}' \
               ${{ secrets.SLACK_WEBHOOK }}
+          else
+            echo "ℹ️ No changes to sui.yaml"
           fi
