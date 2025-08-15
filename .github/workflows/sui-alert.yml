@@ -53,7 +53,7 @@ jobs:
             commit_msg=$(git log -1 --pretty=format:'%s')
       
             # List ID tag
-            slack_mentions="<@U096HQGCCBV> <@U789XYZ000> <@U456DEF789>"
+            slack_mentions="<@U096HQGCCBV> <@U0839EP9DHA> <@U02HSBFJL5R>"
       
             echo "✅ sui.yaml was updated — sending Slack alert"
             curl -X POST -H 'Content-type: application/json' \
